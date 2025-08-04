@@ -33,6 +33,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
    @column()
   declare uuid: string
 
+  @column()
+  declare fcm: string | null
+
   @column.dateTime({ autoCreate: true })
   declare lastAccess: DateTime
 

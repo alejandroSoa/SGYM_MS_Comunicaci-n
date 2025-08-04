@@ -561,6 +561,58 @@ const refreshToken = await User.refreshTokens.create(user)
   })
 }
 
+  /**
+   * Actualiza el token FCM de Firebase para notificaciones push
+   */
+  public async updateFcmToken({ request, response, auth }: HttpContext) {
+    try {
+      // Autenticar al usuario
+      const user = await auth.authenticate()
+      
+      // Obtener el token FCM del request
+      const { fcm_token } = request.only(['fcm_token'])
 
+      // Validar que el token FCM esté presente
+      if (!fcm_token) {
+        return response.badRequest({
+          status: 'error',
+          data: {},
+          msg: 'El token FCM es requerido.',
+        })
+      }
+
+      // Buscar el usuario en la base de datos
+      const userToUpdate = await User.find(user.id)
+      
+      if (!userToUpdate) {
+        return response.notFound({
+          status: 'error',
+          data: {},
+          msg: 'Usuario no encontrado.',
+        })
+      }
+
+      // Actualizar el token FCM
+      userToUpdate.fcm = fcm_token
+      await userToUpdate.save()
+
+      return response.ok({
+        status: 'success',
+        data: {
+          user_id: user.id,
+          fcm_token: fcm_token
+        },
+        msg: 'Token FCM actualizado correctamente.',
+      })
+
+    } catch (error) {
+      console.error('Error al actualizar token FCM:', error)
+      return response.internalServerError({
+        status: 'error',
+        data: {},
+        msg: 'Error interno del servidor al actualizar el token FCM.',
+      })
+    }
+  }
 
 }
