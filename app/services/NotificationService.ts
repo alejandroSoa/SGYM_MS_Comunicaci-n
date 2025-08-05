@@ -1,12 +1,4 @@
-import admin from 'firebase-admin';
-import type { ServiceAccount } from 'firebase-admin';
-import env from '#start/env';
-
-const serviceAccount: ServiceAccount = require(env.get('FIREBASE_PRIVATE_KEY_PATH'));
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+import admin from '#config/firebase';
 
 class NotificationService {
   /**

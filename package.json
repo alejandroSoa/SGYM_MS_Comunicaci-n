@@ -61,6 +61,7 @@
     "@vinejs/vine": "^3.0.1",
     "bcrypt": "^6.0.0",
     "edge.js": "^6.2.1",
+    "firebase-admin": "^13.4.0",
     "luxon": "^3.6.1",
     "mysql2": "^3.14.1",
     "qrcode": "^1.5.4",

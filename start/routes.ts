@@ -14,8 +14,8 @@ const OauthController = () => import('#controllers/OAuth/auth_controller')
 const NotificationsController = () => import('#controllers/notifications_controller')
 
 // Ruta para actualizar token FCM
-router.put('/users/fcm-token', [UsersController, 'updateFcmToken']).use(middleware.auth())
+router.put('/users/fcm-token', [UsersController, 'updateFcmToken'])
 
 // Rutas de notificaciones - usando el usuario autenticado
-router.post('/notifications/push', [NotificationsController, 'sendPush']).use(middleware.auth())
+router.post('/notifications/push', [NotificationsController, 'sendPush'])
 router.post('/notifications/email', [NotificationsController, 'sendEmail']).use(middleware.auth())

@@ -1,15 +1,23 @@
 import type { HttpContext } from '@adonisjs/core/http';
-import NotificationService from '#services/notification_service';
-import MailService from '#services/mail_service';
+import NotificationService from '#services/NotificationService';
+import MailService from '#services/MailService';
 import User from '#models/user';
 
 export default class NotificationsController {
 
   /**
-   * Envía una notificación push al usuario autenticado.
+   * Envía una notificación push al usuario especificado.
    */
-  public async sendPush({ request, response, auth }: HttpContext) {
-    const { title, body } = request.only(['title', 'body']);
+  public async sendPush({ request, response }: HttpContext) {
+    const { user_id, title, body } = request.only(['user_id', 'title', 'body']);
+
+    if (!user_id) {
+      return response.badRequest({
+        status: 'error',
+        data: {},
+        msg: 'El ID del usuario es requerido.'
+      });
+    }
 
     if (!title || !body) {
       return response.badRequest({
@@ -20,11 +28,8 @@ export default class NotificationsController {
     }
 
     try {
-      // Obtener el usuario autenticado
-      const authenticatedUser = await auth.authenticate();
-      
-      // Buscar el usuario completo en la base de datos para obtener el token FCM
-      const user = await User.find(authenticatedUser.id);
+      // Buscar el usuario en la base de datos usando el user_id proporcionado
+      const user = await User.find(user_id);
       
       if (!user) {
         return response.notFound({
@@ -54,11 +59,26 @@ export default class NotificationsController {
         },
         msg: 'Notificación push enviada correctamente.'
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al enviar notificación push:', error);
+      
+      // Manejo específico para errores de Firebase
+      if (error.errorInfo?.code === 'messaging/mismatched-credential') {
+        return response.badRequest({
+          status: 'error',
+          data: {
+            error_code: 'mismatched_credential',
+            firebase_project: 'proyecto9no-b0aa7'
+          },
+          msg: 'El token FCM no pertenece al proyecto Firebase correcto. Verifique que el cliente esté configurado para el proyecto "proyecto9no-b0aa7".'
+        });
+      }
+      
       return response.internalServerError({
         status: 'error',
-        data: {},
+        data: {
+          error_code: error.errorInfo?.code || 'unknown'
+        },
         msg: 'Error al enviar la notificación push.'
       });
     }

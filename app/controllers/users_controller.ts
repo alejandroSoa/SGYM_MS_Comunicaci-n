@@ -564,13 +564,19 @@ const refreshToken = await User.refreshTokens.create(user)
   /**
    * Actualiza el token FCM de Firebase para notificaciones push
    */
-  public async updateFcmToken({ request, response, auth }: HttpContext) {
+  public async updateFcmToken({ request, response }: HttpContext) {
     try {
-      // Autenticar al usuario
-      const user = await auth.authenticate()
-      
-      // Obtener el token FCM del request
-      const { fcm_token } = request.only(['fcm_token'])
+      // Obtener el user_id y token FCM del request
+      const { user_id, fcm_token } = request.only(['user_id', 'fcm_token'])
+
+      // Validar que el user_id esté presente
+      if (!user_id) {
+        return response.badRequest({
+          status: 'error',
+          data: {},
+          msg: 'El ID del usuario es requerido.',
+        })
+      }
 
       // Validar que el token FCM esté presente
       if (!fcm_token) {
@@ -582,7 +588,7 @@ const refreshToken = await User.refreshTokens.create(user)
       }
 
       // Buscar el usuario en la base de datos
-      const userToUpdate = await User.find(user.id)
+      const userToUpdate = await User.find(user_id)
       
       if (!userToUpdate) {
         return response.notFound({
@@ -599,7 +605,7 @@ const refreshToken = await User.refreshTokens.create(user)
       return response.ok({
         status: 'success',
         data: {
-          user_id: user.id,
+          user_id: user_id,
           fcm_token: fcm_token
         },
         msg: 'Token FCM actualizado correctamente.',
